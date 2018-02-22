@@ -150,6 +150,7 @@ function(moods){
 }
 
 #* @get /echo
+#* @post /echo
 function(msg=""){
   list(msg = paste0("The message is: '", msg, "'"))
 }

@@ -141,3 +141,11 @@ function(moods){
 	links <- findEdges(nodes)
 	return(list(nodes=nodes,links=links))
 }
+
+#* @get /echo
+function(msg=""){
+  list(msg = paste0("The message is: '", msg, "'"))
+}
+
+#* @get /
+function() { Sys.Date() }

@@ -126,6 +126,13 @@ findEdges <- function(clusters){
 	return(edges)
 }
 
+#* @filter cors
+ cors <- function(res) {
+     res$setHeader("Access-Control-Allow-Origin", "*")
+     plumber::forward()
+ }
+
+
 #* @post /moodgraph
 function(moods){
 	## error handling 

@@ -151,9 +151,9 @@ function(moods){
 
 #* @get /echo
 #* @post /echo
-function(msg=""){
-  list(msg = paste0("The message is: '", msg, "'"))
-}
+#function(msg=""){
+#  list(msg = paste0("The message is: '", msg, "'"))
+#}
 
-#* @get /
-function() { Sys.Date() }
+##* @get /
+#function() { Sys.Date() }

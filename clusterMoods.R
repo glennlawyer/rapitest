@@ -95,12 +95,12 @@ findClusters <- function(moods){
 	## assign cluster IDs to each entry
 	membership <- apply(unique(clustMat),1,function(row){which(row)})
 	clustered <- rbindlist(lapply(seq_along(membership), 
-																function(index){
-																	members <- membership[[index]]
-																	clusterID <-  rep(index,length(members))
-																	cbind(moods[ members, ], clusterID)
-																}
-																))
+		function(index){
+			members <- membership[[index]]
+			clusterID <-  rep(index,length(members))
+			cbind(moods[ members, ], clusterID)
+		}
+		))
 	return(as.data.frame(clustered))
 }
 

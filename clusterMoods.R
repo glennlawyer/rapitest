@@ -9,10 +9,27 @@ require('rdist') ## for calculating distances
 require('data.table') ## for the rbindlist function
 require('Matrix') ## for converting the transition matrix to an edgelist
 
-# radialToEuclid <- function(point){
-# 	alpha <- atan2(point$activation, point$affect)
-# 	x <- sin(alpha)
-# 	y <- cos(alpha)
+## for testing:
+## moods <- read.csv("../sampleMoodData.csv")
+
+## Converts a pair "activation, affect" values 
+## which are assumed to represent mood space
+##    (note activation === y axis)
+## to a point in Euclidean space
+## NOT SURE IF THIS IS WORKING YET!!!
+radialToEuclid <- function(point){
+	activation <- point[1]
+	affect <- point[2]
+	alpha <- atan2(activation, affect)
+	x <- sign(affect) * abs(affect/cos(alpha))
+	y <- sign(activation) * abs(activation/sin(alpha))
+	return (c(affect=x, activation=y))
+}
+
+
+euclidToRadial <- function(point){
+}
+
 	
 ## helper function which binds the cluster ID to the 
 ## (global) moods data
@@ -47,6 +64,8 @@ findClusters <- function(moods){
 	## extract the point locations
 	points <- cbind(moods$activation, moods$affect)
 	## TODO! convert points to euclidean space!
+	## still needs debugging
+	# points <- radialToEuclid(moods$activation, moods$affect)
 
 	## set parameters
 	epsilon <- 1e-3
@@ -92,6 +111,13 @@ findClusters <- function(moods){
 		## the outer while loop is triggered
 		epsilon <- min(epsilon * 0.2, deltaScore * 0.8)
 	}
+	## find cluster centers
+	clustCenters <- as.data.frame(hillclimbOut$newpos[! duplicated(clustMat),])
+	clustCenters$clusterID <- seq(1:dim(clustCenters)[1])
+	## names are correct, as points are cbind in this order
+	## at the start of this function
+	names(clustCenters) <- c("activation", "affect", "clusterID")
+
 	## assign cluster IDs to each entry
 	membership <- apply(unique(clustMat),1,function(row){which(row)})
 	clustered <- rbindlist(lapply(seq_along(membership), 
@@ -101,16 +127,16 @@ findClusters <- function(moods){
 			cbind(moods[ members, ], clusterID)
 		}
 		))
-	return(as.data.frame(clustered))
+	return(list(ccenters= clustCenters, assignments=as.data.frame(clustered)))
 }
 
 
 ## sorts the nodes based on timestamp.
 ## uses this to create a sparse transition 
 ## matrix, which is returned as an edge list.
-findEdges <- function(clusters){
+findEdges <- function(clusteredMoods){
 	## order nodes by time
-	clustNames <- as.factor(clusters[order(clusters$timestamp),]$cluster)
+	clustNames <- as.factor(clusteredMoods[order(clusteredMoods$timestamp),]$cluster)
 
 	## make transition matrix
 	nclust <- length(unique(clustNames))
@@ -145,9 +171,10 @@ function(moods){
 		return(list(error=msg, numEntries=numEntries))
 	}
 
-	nodes <- findClusters(moods)
-	links <- findEdges(nodes)
-	return(list(nodes=nodes,links=links, numEntries=numEntries))
+	ans <- findClusters(moods)
+	links <- findEdges(ans$assignments)
+	return(list(nodes=ans$ccenters, links=links,
+							numEntries=numEntries))
 }
 
 #* @get /echo
@@ -158,3 +185,8 @@ function(moods){
 
 ##* @get /
 #function() { Sys.Date() }
+
+## more debug
+
+# foo <- ans$assignments[,c(1,2,11)]
+# plot(foo[,1],foo[,2],pch = foo[,3], col=rainbow(8)[foo[,3]])

@@ -137,16 +137,17 @@ findEdges <- function(clusters){
 function(moods){
 	## error handling 
 	# if(!moods){ return(list(error="no mood data")) }
-	if(dim(moods)[1]< 20){ 
+	numEntries <- dim(moods)[1]
+	if(numEntries< 20){ 
 		cat('error\n')
 		msg <- paste("insufficient mood history, only ",
-								 dim(moods)[1], "entries")
-		return(list(error=msg))
+								 numEntries, "entries")
+		return(list(error=msg, numEntries=numEntries))
 	}
 
 	nodes <- findClusters(moods)
 	links <- findEdges(nodes)
-	return(list(nodes=nodes,links=links))
+	return(list(nodes=nodes,links=links, numEntries=numEntries))
 }
 
 #* @get /echo
